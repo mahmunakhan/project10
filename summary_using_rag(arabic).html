@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retrieval-Augmented Generation (RAG) System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h2 {
+            color: #555;
+        }
+        ul {
+            list-style-type: square;
+        }
+        .architecture {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .steps {
+            margin: 20px 0;
+        }
+        .step {
+            margin-bottom: 10px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Retrieval-Augmented Generation (RAG) System Overview</h1>
+
+<h2>Approach</h2>
+<div class="steps">
+    <div class="step"><strong>1. Retrieval and Embedding Generation:</strong>
+        <ul>
+            <li>Documents are uploaded in PDF format and split into chunks using <em>RecursiveCharacterTextSplitter</em>.</li>
+            <li>Chunks are embedded using <em>OllamaEmbeddings (paraphrase-multilingual:latest)</em>, creating document embeddings.</li>
+            <li>Embeddings are stored in the <em>FAISS</em> vector store for efficient similarity-based retrieval.</li>
+        </ul>
+    </div>
+    
+    <div class="step"><strong>2. Retrieval-Augmented Generation:</strong>
+        <ul>
+            <li><strong>Dense Retrieval:</strong> Uses FAISS for dense retrieval based on vector similarity.</li>
+            <li>A retriever object retrieves the most relevant documents based on user queries or context.</li>
+            <li>Retrieved documents are processed by a generative language model (Ollama) to generate a summarized response in Arabic.</li>
+        </ul>
+    </div>
+
+    <div class="step"><strong>3. Generative Model:</strong>
+        <ul>
+            <li>Ollama generates the summary based on retrieved documents and a customized summarization prompt in Arabic.</li>
+        </ul>
+    </div>
+
+    <div class="step"><strong>4. Document Chain:</strong>
+        <ul>
+            <li>The <em>document_chain</em> (created via <em>create_stuff_documents_chain</em>) combines the retrieved documents for final summarization.</li>
+        </ul>
+    </div>
+</div>
+
+<h2>Type of RAG</h2>
+<p><strong>RAG-Sequence:</strong> The code follows the RAG-Sequence approach, where documents are retrieved first and then passed to the language model for summarization.</p>
+
+<h2>Key Components</h2>
+<ul>
+    <li><strong>Dense Retrieval:</strong> Use of FAISS for vector-based document retrieval.</li>
+    <li><strong>Retriever-Generator Pipeline:</strong> Retrieved documents are passed to the language model for generating the final response.</li>
+</ul>
+
+<h2>Techniques Used</h2>
+<ul>
+    <li><strong>Text Splitting:</strong> <em>RecursiveCharacterTextSplitter</em> splits documents into manageable chunks, enhancing retrieval precision.</li>
+    <li><strong>Embeddings-Based Retrieval:</strong> <em>OllamaEmbeddings</em> and FAISS are used for generating embeddings and retrieving documents.</li>
+    <li><strong>Prompt-Based Generation:</strong> Custom prompt in Arabic for generating a well-structured and concise summary.</li>
+</ul>
+
+<h2>Summary</h2>
+<ul>
+    <li><strong>RAG Type:</strong> RAG-Sequence.</li>
+    <li><strong>Retrieval Method:</strong> Dense Retrieval (using FAISS and embeddings).</li>
+    <li><strong>Technique:</strong> Retriever-Generator Pipeline, with chunking, embedding-based retrieval, and prompt-based generation.</li>
+</ul>
+
+<div class="architecture">
+    <h2>Project Architecture</h2>
+    <img src="https://i0.wp.com/blog.voyageai.com/wp-content/uploads/2023/10/Untitled201.png?resize=1024%2C321&quality=80&ssl=1" alt="Project Architecture Diagram">
+</div>
+
+</body>
+</html>

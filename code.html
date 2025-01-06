@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Summarization App Code Explanation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #555;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-left: 3px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Document Summarization App Code Explanation</h1>
+
+<h2>1. Importing Necessary Libraries and Packages</h2>
+<p>The following libraries and packages are imported to support document processing, user interface (UI), and integration with language models.</p>
+<pre>
+import os
+import time
+import streamlit as st
+from dotenv import load_dotenv
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chains import create_retrieval_chain
+from langchain_community.llms.ollama import Ollama
+</pre>
+<ul>
+    <li><b>os</b>: Used to interact with the operating system, such as file removal.</li>
+    <li><b>time</b>: For measuring response times and other timing-related functions.</li>
+    <li><b>streamlit</b>: A library for creating web apps with simple Python scripts (used for UI in this case).</li>
+    <li><b>dotenv</b>: To load environment variables from a `.env` file, helpful for storing sensitive data like API keys.</li>
+    <li><b>PyPDFLoader</b>: A document loader from the LangChain community to load and process PDF files.</li>
+    <li><b>OllamaEmbeddings</b>: Embedding generator that converts text into vectors (for use with the Ollama model).</li>
+    <li><b>FAISS</b>: A vector store to store and retrieve embeddings efficiently.</li>
+    <li><b>RecursiveCharacterTextSplitter</b>: A text chunking method that splits documents into manageable chunks based on characters.</li>
+    <li><b>ChatPromptTemplate</b>: A template for creating structured prompts for language models.</li>
+    <li><b>Ollama</b>: Used to integrate and run a language model (LLM) like `qwen2:1.5b` for document summarization.</li>
+</ul>
+
+<h2>2. Loading Environment Variables</h2>
+<p>The code below loads any environment variables set in a `.env` file.</p>
+<pre>load_dotenv()</pre>
+<p>This is particularly useful for safely loading API keys or sensitive data without hardcoding them in the script.</p>
+
+<h2>3. LLM Initialization</h2>
+<pre>llm = Ollama(model="qwen2:1.5b", temperature=0.3)</pre>
+<ul>
+    <li><b>Ollama model:</b> We initialize the Ollama language model, specifying the model as "qwen2:1.5b".</li>
+    <li><b>Temperature:</b> Set to 0.3, it controls the randomness of the model's predictions. Lower values make the model more deterministic.</li>
+</ul>
+
+<h2>4. Streamlit App Setup</h2>
+<p>We configure the Streamlit app and set the page layout.</p>
+<pre>st.set_page_config(layout="wide")</pre>
+<p>This line sets the Streamlit app layout to "wide", making better use of the screen space.</p>
+
+<h2>5. Setting the Title of the App</h2>
+<p>The title of the app is displayed using this line:</p>
+<pre>st.title("Document Summarization App")</pre>
+
+<h2>6. Initializing Session State for Vector Database</h2>
+<p>The session state is used to keep the vector database, embeddings, and document data persistent across Streamlit app reruns.</p>
+<pre>
+if "vector" not in st.session_state:
+    st.session_state.embeddings = OllamaEmbeddings(model="paraphrase-multilingual:latest")
+    st.session_state.documents = []
+    st.session_state.vector = None
+</pre>
+<ul>
+    <li><b>st.session_state</b>: Used to preserve data between reruns of the app.</li>
+    <li><b>OllamaEmbeddings:</b> Initializes multilingual embeddings for document representation.</li>
+    <li><b>documents</b> and <b>vector</b>: These are placeholders for the document content and the vector database, respectively.</li>
+</ul>
+
+<h2>7. File Preprocessing Function</h2>
+<pre>
+def preprocess_file(uploaded_file):
+    temp_file_path = "temp_" + uploaded_file.name
+    with open(temp_file_path, "wb") as temp_file:
+        temp_file.write(uploaded_file.read())
+
+    loader = PyPDFLoader(temp_file_path)
+    pages = loader.load_and_split()
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=300)
+    texts = text_splitter.split_documents(pages)
+
+    os.remove(temp_file_path)
+    
+    return texts
+</pre>
+<ul>
+    <li>This function processes the uploaded PDF file. It saves it temporarily, splits the PDF into pages, and chunks the text using `RecursiveCharacterTextSplitter`.</li>
+    <li><b>chunk_size=1500</b>: Splits the document into chunks of 1500 characters for better context.</li>
+    <li>The temporary file is deleted using <b>os.remove()</b> after processing.</li>
+</ul>
+
+<h2>8. Setting up the Vector Database</h2>
+<pre>
+def setup_vector_db(docs):
+    vectordb = FAISS.from_documents(docs, st.session_state.embeddings)
+    return vectordb
+</pre>
+<p>This function creates a vector database from the processed documents using FAISS, which allows for efficient embedding retrieval.</p>
+
+<h2>9. Main Function</h2>
+<p>The main function handles the app's UI interactions and document summarization logic.</p>
+<pre>
+def main():
+    uploaded_file = st.file_uploader("Upload your PDF file", type=['pdf'])
+    if uploaded_file is not None:
+        if st.button("Summarize"):
+            st.session_state.documents = preprocess_file(uploaded_file)
+            st.session_state.vector = setup_vector_db(st.session_state.documents)
+
+            prompt_template = """
+أنت خبير في تلخيص النصوص. يرجى تقديم ملخص موجز ودقيق للوثيقة التالية باللغة العربية على شكل نقاط رئيسية.
+يرجى التأكد من أن الملخص يحتوي على 10 نقاط على الأقل، وكل نقطة يجب أن تكون موجزة وتلخص فكرة رئيسية من المستند.
+
+<context>
+{context}
+</context>
+
+الملخص في شكل نقاط رئيسية (10 نقاط على الأقل):
+- 
+"""
+            prompt = ChatPromptTemplate.from_template(prompt_template)
+
+            document_chain = create_stuff_documents_chain(llm, prompt)
+            retriever = st.session_state.vector.as_retriever()
+            retrieval_chain = create_retrieval_chain(retriever, document_chain)
+
+            start = time.process_time()
+            summary_response = retrieval_chain.invoke({"input": ""})
+            response_time = time.process_time() - start
+
+            st.write(f"Response time: {response_time} seconds")
+            st.success(summary_response["answer"])
+</pre>
+<ul>
+    <li><b>st.file_uploader</b>: A UI element that allows the user to upload a PDF file.</li>
+    <li><b>st.button</b>: A button to trigger the summarization process.</li>
+    <li>The prompt template is written in Arabic, asking for a summary in bullet points.</li>
+    <li><b>document_chain</b>: Creates a document summarization chain using the LLM and the prompt template.</li>
+    <li><b>Combining Multiple Documents</b>:
+        <ul>
+            <li>The chain "stuffs" multiple documents (or chunks of text) together into one larger piece of text, which can then be passed to the language model.</li>
+            <li>It is useful when you want to process multiple documents or sections at once but want them treated as one unit.</li>
+            <li>This works well for smaller tasks or when the combined document size does not exceed the token limit of the language model.</li>
+        </ul>
+    </li>
+    <li><b>retrieval_chain</b>: Links the retriever (vector database) with the document chain for generating the summary.</li>
+    <li><b>time.process_time()</b>: Measures the time taken to retrieve and summarize the document.</li>
+</ul>
+
+
+<h2>10. Running the App</h2>
+<pre>if __name__ == "__main__": main()</pre>
+<p>This ensures that the <b>main()</b> function runs when the script is executed directly.</p>
+
+</body>
+</html>

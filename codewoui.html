@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changes Between UI and Command-Line Versions of the Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h1, h2, h3 {
+            color: #2C3E50;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Comparison of the Code with UI (Streamlit) and Without UI (Command-Line)</h1>
+
+    <h2>Changes Made to Remove the UI</h2>
+    <ul>
+        <li>
+            <strong>Streamlit File Uploader:</strong><br>
+            <code>uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])</code><br>
+            <em>Removed this line because we are no longer using Streamlit's UI to upload the file. Replaced it with command-line input for the file path.</em>
+        </li>
+        <li>
+            <strong>Replaced File Input:</strong><br>
+            <code>file_path = input("Enter the path of the PDF file: ")</code><br>
+            <em>Added this line to manually input the file path when running the code locally from the command line.</em>
+        </li>
+        <li>
+            <strong>Streamlit Write for Text Output:</strong><br>
+            <code>st.write(summary_response["output_text"])</code><br>
+            <em>Removed this line because we are no longer using Streamlit to display the summary. Replaced it with a print statement.</em>
+        </li>
+        <li>
+            <strong>Replaced Output with Print Statements:</strong><br>
+            <code>print("\nSummary:")</code><br>
+            <code>print(summary_response["output_text"])</code><br>
+            <em>Added these lines to print the summary directly to the console instead of using Streamlit's write method.</em>
+        </li>
+        <li>
+            <strong>Streamlit Text Area for Displaying Response Time:</strong><br>
+            <code>st.write(f"Time taken: {response_time:.2f} seconds")</code><br>
+            <em>Removed this line because Streamlit is not used for displaying output anymore. Replaced it with a print statement.</em>
+        </li>
+        <li>
+            <strong>Replaced Response Time Display with Print Statement:</strong><br>
+            <code>print(f"\nTime taken: {response_time:.2f} seconds")</code><br>
+            <em>Added this line to display the response time directly in the command-line output.</em>
+        </li>
+    </ul>
+
+    <h2>File Path Validation</h2>
+    <ul>
+        <li>
+            <strong>Added File Path Validation:</strong><br>
+            <code>if os.path.exists(file_path):</code><br>
+            <em>Added this line to ensure that the file path entered by the user is valid. This helps to avoid errors if the file path is incorrect or the file doesn't exist.</em>
+        </li>
+        <li>
+            <strong>Error Message for Invalid File Path:</strong><br>
+            <code>print("Invalid file path. Please try again.")</code><br>
+            <em>Added this line to notify the user if they provide an invalid file path.</em>
+        </li>
+    </ul>
+
+    <h2>Summary of Changes</h2>
+    <p>
+        The main changes involve removing all Streamlit-related functionality like the file uploader, text display, and handling of response times. These were replaced with command-line equivalents:
+    </p>
+    <ul>
+        <li>Using <code>input()</code> to get the file path from the user.</li>
+        <li>Using <code>print()</code> to display the summary and response time.</li>
+        <li>Added validation to check the existence of the file path with <code>os.path.exists()</code>.</li>
+    </ul>
+
+    <h2>Additional Changes</h2>
+    <p>
+        The program now runs locally on the command prompt and doesn't rely on a web-based UI. This makes it more suitable for users who want to run the code on their local machines without needing a web interface.
+    </p>
+
+</body>
+</html>
